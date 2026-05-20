@@ -1,14 +1,20 @@
-# 🐟 Chatbot Invermar — Beneficios y Remuneraciones
+# Chatbot Invermar — Agente de Recursos Humanos
 
-> Asistente conversacional interno para consultas de remuneraciones y beneficios del personal de **Invermar S.A.** y empresas relacionadas.
+> Agente conversacional autónomo para consultas de remuneraciones y beneficios del personal de **Invermar S.A.** y empresas relacionadas.  
+> Desarrollado para el curso **ISY0101 — Ingeniería de Soluciones con IA** (DuocUC, 2025).
 
 ---
 
-## 📋 Descripción
+## Descripción
 
-Este chatbot fue desarrollado para apoyar la gestión del área de **Remuneraciones** de Invermar S.A., permitiendo a los colaboradores y al equipo de RRHH resolver dudas frecuentes relacionadas con liquidaciones de sueldo, beneficios, finiquitos y normativa laboral vigente, de forma rápida y automatizada.
+Este proyecto evoluciona en dos fases:
 
-Cubre las empresas del grupo:
+| Fase | Notebooks | Descripción |
+|---|---|---|
+| **RA1** — Chatbot RAG | `IL1.1` → `IL1.4` | Chatbot con prompt engineering, RAG (FAISS), memoria conversacional y trazabilidad LangSmith |
+| **RA2** — Agente Funcional | `EP2_Agente_Invermar.ipynb` | Agente ReAct con 5 herramientas, interfaz visual, correo automático y memoria dual |
+
+El agente cubre las empresas del grupo:
 - Invermar S.A.
 - Pesquera La Portada S.A.
 - La Península S.A.
@@ -16,198 +22,257 @@ Cubre las empresas del grupo:
 
 ---
 
-## 🎯 Funcionalidades principales
-
-### 💰 Remuneraciones
-- Consulta de componentes de la liquidación de sueldo (sueldo base, horas extra, bonos, descuentos)
-- Explicación del cálculo del Impuesto Único de Segunda Categoría (IUSC)
-- Información sobre reliquidaciones y correcciones de haberes
-- Consultas sobre remuneración variable (KPIs, rendimiento, eficiencia)
-- Fechas de pago de remuneraciones por empresa
-
-### 🎁 Beneficios
-- Detalle de beneficios vigentes por empresa y área
-- Información sobre aguinaldos (Fiestas Patrias y Navidad)
-- Consultas sobre asignaciones UF, bonos por zona, y beneficios de bienestar
-- Información CCAF (Caja de Compensación)
-- Beneficios según tramo de antigüedad
-
-### 📄 Finiquitos
-- Simulación de montos de indemnización (aviso previo, años de servicio)
-- Información sobre vacaciones proporcionales al finiquito
-- Consultas sobre el proceso de firma y plazos legales
-
-### 📅 Vacaciones
-- Cálculo de días de faunavacaciones legales y progresivas (Art. 68 Código del Trabajo)
-- Consulta de saldo de vacaciones disponible
-- Información sobre feriados legales en Chile
-
-### 📌 Normativa y preguntas frecuentes
-- Artículos relevantes del Código del Trabajo (Art. 172, Art. 68, etc.)
-- Información sobre AFP, Isapre/Fonasa y otros descuentos previsionales
-- Plazos y procedimientos internos de remuneraciones
-
----
-
-## 🏗️ Estructura del proyecto
+## Arquitectura del Agente (EP2)
 
 ```
-chatbot-invermar/
-│
-├── README.md                  # Este archivo
-├── .env                       # Variables de entorno (no subir a Git)
-├── .gitignore
-│
-├── src/
-│   ├── main.py                # Punto de entrada principal
-│   ├── config.py              # Configuración general y variables
-│   │
-│   ├── chatbot/
-│   │   ├── agent.py           # Lógica del agente conversacional
-│   │   ├── prompts.py         # Prompts del sistema e instrucciones
-│   │   └── memory.py          # Manejo del historial de conversación
-│   │
-│   ├── knowledge/
-│   │   ├── beneficios.md      # Base de conocimiento: beneficios
-│   │   ├── remuneraciones.md  # Base de conocimiento: remuneraciones
-│   │   ├── finiquitos.md      # Base de conocimiento: finiquitos
-│   │   └── normativa.md       # Base de conocimiento: normativa legal
-│   │
-│   └── utils/
-│       ├── calculadora.py     # Funciones de cálculo (IUSC, indemnización, etc.)
-│       └── formatos.py        # Formateo de respuestas
-│
-├── tests/
-│   └── test_calculos.py       # Pruebas unitarias de cálculos
-│
-└── docs/
-    └── manual_usuario.md      # Guía de uso para colaboradores
+Usuario → Interfaz ipywidgets (panel visual) → AgentExecutor (ReAct) → LLM gpt-4o-mini
+                                                        │
+                              ┌─────────────────────────┴─────────────────────────┐
+                              │                                                   │
+                           Memoria                                          Herramientas
+                           ├─ Corto plazo:      ├─ consultar_politicas_invermar  (RAG / FAISS)
+                           │  WindowHistory     ├─ calcular_indemnizacion        (Art. 163 CT)
+                           │  (6 mensajes)      ├─ calcular_vacaciones_proporc.  (Art. 73 CT)
+                           └─ Largo plazo:      ├─ clasificar_consulta           (razonamiento)
+                              FAISS vectorstore └─ enviar_resumen_correo         (Gmail SMTP)
+                              (8 políticas)
+                                                        │
+                                               Al final de cada respuesta
+                                               el agente envía resumen por
+                                               correo al trabajador (Gmail)
 ```
 
 ---
 
-## ⚙️ Requisitos
+## Estructura del Repositorio
+
+```
+ChatBot_Invermar/
+│
+├── EP2_Agente_Invermar.ipynb      ← Agente funcional EP2 (RA2)
+├── EP2_Informe_Tecnico.md         ← Informe técnico EP2 (5 páginas)
+│
+├── IL1.1 - Primera_Entrega.ipynb  ← Chatbot base con memoria y widgets
+├── IL1.2 - Segunda_Entrega.ipynb  ← Ingeniería de prompts (zero-shot, few-shot)
+├── IL1.3 - Tercera_Entrega.ipynb  ← RAG con FAISS y embeddings
+├── IL1.4 - Cuarta_Entrega.ipynb   ← LangSmith + evaluador LLM-as-a-Judge
+├── ChatBot.ipynb                  ← Versión integrada del chatbot RA1
+│
+├── requirements.txt               ← Dependencias del proyecto
+└── README.md                      ← Este archivo
+```
+
+---
+
+## Requisitos
 
 | Herramienta | Versión mínima |
-|-------------|----------------|
-| Python      | 3.10+          |
-| pip         | 23+            |
-| Node.js *(opcional, para frontend)* | 18+ |
+|---|---|
+| Python | 3.11+ |
+| uv (gestor de paquetes) | 0.4+ |
 
 ### Dependencias principales
 
-```txt
+```
+langchain>=1.0.0
+langchain-openai>=0.3.0
+langchain-community>=0.3.0
+langchain-classic>=1.0.0
+langchain-text-splitters>=0.3.0
+langsmith>=0.3.0
+faiss-cpu>=1.7.0
 openai>=1.0.0
-langchain>=0.2.0
-langchain-openai>=0.1.0
 python-dotenv>=1.0.0
+ipywidgets>=8.0.0
+mistune>=3.0.0
+jupyter>=1.0.0
 ```
 
-Instalar con:
+---
+
+## Instalación y Configuración
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/KanninoX/ChatBot_Invermar.git
+cd ChatBot_Invermar
+```
+
+### 2. Instalar dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
+### 3. Configurar variables de entorno
 
-## 🚀 Instalación y configuración
-
-### 1. Clonar el repositorio
-
-```bash
-git clone git@github.com:KanninoX/chatbot-invermar.git
-cd chatbot-invermar
-```
-
-### 2. Crear el archivo `.env`
+Crear un archivo `.env` en la raíz del proyecto:
 
 ```env
-OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
-EMPRESA_DEFAULT=Invermar S.A.
-IDIOMA=es
+# API para modelos LLM y embeddings (GitHub Models)
+GITHUB_TOKEN=github_pat_xxxxxxxxxxxxxxxxxxxx
+OPENAI_BASE_URL=https://models.inference.ai.azure.com
+
+# Trazabilidad con LangSmith (opcional pero recomendado)
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=lsv2_pt_xxxxxxxxxxxxxxxxxxxx
+LANGSMITH_PROJECT=InvermarBot
+
+# Correo automático al trabajador (Gmail)
+GMAIL_SENDER=tu_cuenta@gmail.com
+GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
 ```
 
-> ⚠️ **Nunca subas el archivo `.env` a GitHub.** Ya está incluido en el `.gitignore`.
+> **GITHUB_TOKEN:** GitHub → Settings → Developer settings → Personal access tokens  
+> **LANGSMITH_API_KEY:** [smith.langchain.com](https://smith.langchain.com)  
+> **GMAIL_APP_PASSWORD:** Google Account → Seguridad → Contraseñas de aplicaciones → [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
 
-### 3. Ejecutar el chatbot
+### 4. Iniciar Jupyter
 
 ```bash
-python src/main.py
+jupyter lab
 ```
 
 ---
 
-## 💬 Ejemplos de uso
+## Ejecución del Agente (EP2)
 
-```
-Usuario: ¿Cuántos días de vacaciones me corresponden si llevo 12 años en la empresa?
+1. Abrir `EP2_Agente_Invermar.ipynb`
+2. Seleccionar el kernel: `chatbot-invermar` (Python 3.11)
+3. Ejecutar todas las celdas en orden: `Kernel → Restart & Run All`
+4. El **panel de chat interactivo** aparece al final de la Celda 6
 
-Chatbot: Según el Art. 68 del Código del Trabajo, con 12 años de servicio
-         te corresponden vacaciones progresivas. A partir del décimo año
-         acumulas 1 día adicional por cada 3 años extra trabajados...
-```
-
-```
-Usuario: ¿Cómo se calcula la indemnización por aviso previo?
-
-Chatbot: La indemnización por aviso previo equivale a 1 mes de remuneración,
-         calculada en base a la última remuneración mensual devengada (Art. 172)...
+```python
+# También disponible programáticamente:
+nueva_sesion()
+chat("¿Cuánto es el aguinaldo de Fiestas Patrias?")
+chat("Llevo 9 años y mi sueldo es $800.000. ¿Cuánto me corresponde?")
+chat("Trabajo en Astilleros Calbuco hace 6 años, me voy en agosto, ¿qué me corresponde?")
 ```
 
 ---
 
-## 🔒 Consideraciones de seguridad y privacidad
+## Herramientas del Agente (5 tools)
 
-- El chatbot **no almacena datos personales** de trabajadores entre sesiones.
-- Las consultas son procesadas de forma anonimizada.
-- El acceso debe estar restringido a la red interna de Invermar o con autenticación.
-- No compartir el `OPENAI_API_KEY` por correo ni por chat.
+### `consultar_politicas_invermar(consulta)`
+Busca en la base de conocimiento interna (FAISS) mediante similitud semántica. Cubre: aguinaldos, bonos, vacaciones, finiquitos, CCAF, fechas de pago, licencias médicas.
+
+### `calcular_indemnizacion(anios_servicio, remuneracion_mensual)`
+Calcula la indemnización por años de servicio según el **Art. 163 del Código del Trabajo**:
+- `anios_servicio` × `remuneracion_mensual` (tope: 11 años)
+- Incluye indemnización sustitutiva de aviso previo (Art. 162 CT)
+
+### `calcular_vacaciones_proporcionales(meses_trabajados, remuneracion_mensual)`
+Calcula el valor de vacaciones proporcionales al finiquito según el **Art. 73 CT**:
+- Fórmula: `(15 días × meses_trabajados / 12) × (remuneracion_mensual / 30)`
+
+### `clasificar_consulta(consulta)`
+Categoriza la consulta en: `LIQUIDACION`, `VACACIONES`, `BENEFICIOS`, `FINIQUITO`, `NORMATIVA` u `OTRO`. Deriva al área correspondiente de RRHH.
+
+### `enviar_resumen_correo(resumen)`
+Envía automáticamente un resumen de la consulta al trabajador por correo electrónico (Gmail SMTP). El agente la llama al final de **cada interacción** como último paso del ciclo ReAct.
 
 ---
 
-## 🧪 Pruebas
+## Interfaz Visual
 
-Para ejecutar las pruebas de los cálculos de remuneraciones:
+El agente incluye un panel de chat con estética corporativa de Invermar:
 
-```bash
-python -m pytest tests/
+- **Header** azul `#00205B` con título dorado `#C9B777`
+- **Burbujas de chat**: mensajes del trabajador a la derecha (azul), respuestas del agente a la izquierda (borde dorado), con Markdown renderizado
+- **Barra de estado** en tiempo real (⏳ procesando / ✅ listo)
+- **Botón Nueva sesión** para reiniciar el historial
+
+---
+
+## Ejemplos de Interacción
+
+```
+🧑 Trabajador: ¿Cuándo me depositan el sueldo?
+🤖 Agente:     El pago de remuneraciones en Invermar se realiza el último día
+               hábil de cada mes para todas las empresas del grupo.
+
+🧑 Trabajador: ¿Y si ese día es feriado?
+🤖 Agente:     En ese caso el pago se anticipa al día hábil anterior.
+               [El agente recuerda el contexto sin que el trabajador repita información]
+```
+
+```
+🧑 Trabajador: Llevo 7 años, gano $700.000. Me van a despedir, ¿cuánto me dan?
+🤖 Agente:     CÁLCULO DE INDEMNIZACIÓN (Art. 163 CT)
+               ────────────────────────────────────────
+               Años trabajados  : 7 años
+               Remuneración base: $700.000
+               Indemn. años     : $4.900.000  (7 × $700.000)
+               Aviso previo     : $700.000    (Art. 162)
+               ────────────────────────────────────────
+               TOTAL ESTIMADO   : $5.600.000
+               ⚠️ No incluye vacaciones proporcionales.
+
+📧 [El agente envía automáticamente el resumen al correo del trabajador]
 ```
 
 ---
 
-## 🗺️ Roadmap
+## Observabilidad
 
-- [x] Estructura base del proyecto
-- [x] Base de conocimiento de beneficios y remuneraciones
-- [ ] Integración con API de BUK para consultas en tiempo real
-- [ ] Interfaz web con colores corporativos Invermar (azul `#00205B` / dorado `#C9B777`)
+Si `LANGSMITH_TRACING=true` está configurado, cada ejecución se registra en LangSmith con:
+- Tokens consumidos y latencia por llamada
+- Árbol de herramientas invocadas (ciclo ReAct completo)
+- Trazas del patrón Thought → Action → Observation
+- Evaluaciones automáticas (LLM-as-a-Judge, IL1.4)
+
+Dashboard: [smith.langchain.com](https://smith.langchain.com)
+
+---
+
+## Normativa de Referencia
+
+| Artículo | Contenido |
+|---|---|
+| Art. 67 CT | Vacaciones legales (15 días hábiles anuales) |
+| Art. 68 CT | Vacaciones progresivas (1 día cada 3 años, desde 10 años) |
+| Art. 73 CT | Vacaciones proporcionales al finiquito |
+| Art. 162 CT | Aviso previo (30 días o indemnización sustitutiva) |
+| Art. 163 CT | Indemnización por años de servicio (1 mes/año, tope 11) |
+| Art. 172 CT | Base de cálculo de indemnizaciones (sueldo + promedio variables) |
+
+---
+
+## Roadmap
+
+- [x] Chatbot RAG con memoria conversacional (RA1)
+- [x] Ingeniería de prompts (zero-shot, few-shot, roles)
+- [x] Observabilidad con LangSmith + evaluador LLM-as-a-Judge
+- [x] Agente funcional con 5 herramientas y memoria dual (RA2 / EP2)
+- [x] Interfaz visual con ipywidgets (colores corporativos Invermar)
+- [x] Envío automático de resumen por correo al trabajador (Gmail SMTP)
+- [ ] Integración con API BUK para consultas de liquidaciones en tiempo real
 - [ ] Autenticación por RUT del colaborador
-- [ ] Módulo de consulta de liquidaciones históricas
-- [ ] Soporte para consultas en Google Chat / Teams
+- [ ] Persistencia del historial en Redis
+- [ ] Soporte para Google Chat / Microsoft Teams
 
 ---
 
-## 👤 Autor y mantenimiento
+## Seguridad
+
+- El archivo `.env` **nunca** debe subirse a GitHub (está en `.gitignore`).
+- El agente no almacena datos personales entre sesiones.
+- Las consultas son procesadas de forma anonimizada.
+- El acceso debe restringirse a la red interna de Invermar.
+
+---
+
+## Autor
 
 | Campo | Detalle |
-|-------|---------|
+|---|---|
 | Área responsable | Remuneraciones — Invermar S.A. |
+| Curso | ISY0101 — Ingeniería de Soluciones con IA (DuocUC, 2025) |
 | Plataforma HR | BUK |
-| Repositorio | GitHub privado (`KanninoX`) |
+| Repositorio | GitHub (`KanninoX/ChatBot_Invermar`) |
 
 ---
 
-## 📚 Referencias normativas
-
-- Código del Trabajo de Chile (DFL N°1, 2003)
-- Art. 172 — Base de cálculo de indemnizaciones
-- Art. 68 — Vacaciones progresivas
-- Art. 17 N°13 LIR — Exención tributaria de indemnizaciones
-- Art. 46 LIR — Reliquidación del Impuesto Único
-- Tabla IUSC vigente — Servicio de Impuestos Internos (SII)
-
----
-
-*Documento generado para uso interno. Invermar S.A. — Área de Remuneraciones.*
-    
+*Invermar S.A. — Área de Remuneraciones · Uso interno*
